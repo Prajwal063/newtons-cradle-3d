@@ -157,7 +157,7 @@
           if (isDragging) {
             endX = event.clientX;
             endY = event.clientY;
-            draggedForce = calculateDistance(startX, startY, endX, endY) / 1000;
+            draggedForce = (calculateDistance(startX, startY, endX, endY) / 1000);
             isDragging = false;
             console.log('Distance:', draggedForce);
             updateBallsForce(draggedForce);
@@ -172,11 +172,15 @@
 
         function updateBallsForce(force) {
           moveableDummies.forEach((md, idx) => {
-            if (idx === 0 || idx === ballsCount - 1) {  //balls t swing, 1st ball and last but one ball 
+            if (idx === 0 || idx === ballsCount - 1) {  // First and last ball
               md.maxAngle = Math.PI * force;
             }
           });
         }
+
+        // Damping variables
+        const dampingFactor = 0.99;  // Change this value to adjust how quickly the force decreases
+        let currentForce = 0;
 
         let moveableDummies = new Array(ballsCount).fill().map((p, idx) => {
           let ballDummy = new THREE.Object3D();
@@ -215,6 +219,14 @@
             md.updateMatrix();
             ballSystem.setMatrixAt(md.instanceIndex, md.matrix);
           });
+
+          // Apply damping to the force
+          moveableDummies.forEach((md) => {
+            if (md.maxAngle > 0) {
+              md.maxAngle *= dampingFactor;
+            }
+          });
+
           ballSystem.instanceMatrix.needsUpdate = true;
         };
       }
